@@ -1,0 +1,16 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: basic-task
+spec:
+  params:
+    - name: URL
+      type: string
+      description: "What URL you wish to curl"
+  steps:
+  - name: curl-something
+    image: someimage:tag
+    command:
+    - curl
+    - $(params.URL)
