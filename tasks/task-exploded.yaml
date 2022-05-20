@@ -1,0 +1,113 @@
+# Below is an exploded view of a Tekton Task and its options
+# For a full list or more details, always check the Tekton documentation:
+# https://tekton.dev/docs/pipelines/tasks/
+---
+apiVersion: tekton.dev/v1beta1
+
+# kind: can be either Task or ClusterTask
+kind: Task
+
+# Typical metadata fields for a Kubernetes manifest
+metadata:
+  # Name of the Task/ClusterTask. As with most Kubernetes objects, this must be unique.
+  # However you can have a Task and a ClusterTask with the same name as they are different objects
+  # It is recommened to avoid doing this to reduce confusion
+  name: basic-task
+
+# You can specify a description of the Task to ensure others know what it's purpose is
+description: This is a Task that is 
+
+spec:
+  # This is where parameters are defined for the Task
+  params:
+    # Sets the name of the paramter that can be  passed to the Task like so: $(params.MYSTRINGPARAM)
+    # Ideas for params would be an image version/tag or an artifact name
+    # Note the names do not have to be capitalized, but is easier to identify when looking at the manifest
+  - name: MYSTRINGPARAM
+
+    # Sets the default value of the parameter if it is not overridden in a TaskRun or PipelineRun
+    default: somestring
+
+    # Identifies the type of the parameter to be presented. Options are
+    # string
+    # array
+    type: string
+
+    # Provides a description of the parameter and what it is being used for
+    description: Used to showcase how a parameter is placed into a Task
+      
+  # Begins the declaration of steps in a Task. Note each step is its own container in the Pod created by the TaskRun object
+  steps:
+    #############################
+    ### Tekton specific items ###
+    #############################
+    # This is the name of the step in the task. The container name will be step- followed by the value provided here
+  - name: do-something
+
+    # Which container image to use for the step. This is no different than a typical Kubernetes manifest, but you can use Task params in place of a hard coded image
+    # Examples:
+    #   image: $(params.STEPIMAGE)
+    #   image: registry.example.com/my-task-image:$(params.IMAGETAG)
+    image: registry.example.com/my-task-image
+
+    ### NOTE ###
+    # The following 2 fields (script / command) are unique and there can be only one of them in a step specification
+
+    # A script can be passed in to the container to execute upon start. This does not have to be a SHELL script, but could be whatever you would put in a shebang line
+    # If no shebang line is presented here the following will be used in its absense:
+    # #!/bin/sh
+    # set -e
+    script: |
+      #!/usr/bin/env bash
+      echo "I did a thing $(params.MYSTRINGVAR)"
+
+    # As with the above, this is where you will pass in a command for the container to execute upon start
+    command: ["echo"]
+
+    # Just as with any container specification, you can pass args to the command (ENTRYPOINT/CMD of the Dockerfile) the container image executes
+    args: ["I", "did", "a", "thing", "$(params.MYSTRINGVAR)"]
+
+    # When a step in the Task results in failure, the rest of the steps are skipped and the TaskRun is marked as Failed. The following allows you to specify either of the following to occur if the step would fail
+    #
+    # continue - continue on with the step being a failure, but allowing the rest to run (this sets the entrypoint failed exit code to a Terminated state)
+    # stopAndFail - stops the Task and sets it to failed (this is the default behavior)
+    #
+    # The exit code of the step can be obtained from the status of the TaskRun (not the Pod as step is a component of a TaskRun)
+    # kubectl get taskrun taskrun-name-1a2b3c -o jsonpath='{.status.steps}'
+    onError: continue
+
+    # The timeout field sets how long a step will wait prior to failing. If the timeout is met, the step (and the TaskRun) will be marked as Failed and no further steps will continue
+    # Format is specified in the Go time package: https://golang.org/pkg/time/#ParseDuration (e.g. 1s or 1ms)
+    timeout: 60s
+
+    #############################################################
+    ### Generic Kubernetes items that are present in the Task ###
+    #############################################################
+    # Resources alloted for the container to consume
+    resources:
+      requests:
+        memory: 1Gi
+        cpu: 500m
+      limits:
+        memory: 2Gi
+        cpu: 800m
+
+    # Just like in a Pod manifest for a container, you specify where you would like to mount volumes (if any)
+    volumeMounts:
+    - name: example-volume
+      mountPath: /var/lib/containers
+
+
+  # Alpha feature that is being deprecated
+  resources:
+    inputs:
+    outputs:
+  workspaces:
+  results:
+
+  # As with a Pod manifest, you specify which volumes (if any) you need for this Task. Note this is separate from workspaces
+  volumes:
+  - name: example-volume
+    emptyDir: {}
+  stepTemplate:
+  sidecars:
