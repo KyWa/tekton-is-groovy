@@ -38,11 +38,43 @@ spec:
     # Provides a description of the parameter and what it is being used for
     description: Used to showcase how a parameter is placed into a Task
       
-  # Resources are being deprecated. These are PipelineResources and not CPU/Mem resources
-  # It was an Alpha feature that is being deprecated, but currently still in v1beta1 API
-  resources:
-    inputs:
-    outputs:
+  # Resources are being DEPRECATED. These are PipelineResources and not CPU/Mem resources
+  # It was an Alpha feature that WILL BE deprecated, but currently still in v1beta1 API
+  # resources:
+  #  inputs:
+  #  outputs:
+
+  # Tasks can emit string results that can be viewed by other Tasks or users
+  results:
+    # This will name the result so it can be called later
+  - name: some-digest
+    # Describes whatt the result is from
+    description: A digest for an image
+
+  # A stepTemplate specifies a Container configuration that will be used as a 'starting point" for all steps in a Task
+  # Configurations in the stepTemplate will be applied to all steps, but will be overwritten by a step if it has its own configuration matching what is here
+  stepTemplate:
+    env:
+      - name: BUILD
+        value: true
+
+  # sidecars specify a list of Containers to run alongside steps in a Task
+  # Can be used to provide auxillary functionality such as a authentication mechanisms or even something like "Docker in Docker"
+  # Configuration is identical to a typical Container spec in Kubernetes
+  sidecars:
+  - image: quay.io/example/somepod:latest
+    name: auxillary-container
+    securityContext:
+      privileged: true
+    volumeMounts:
+      - name: example-volume
+        mountPath: /var/run
+
+  # As with a Pod manifest, you specify which volumes (if any) you need for this Task. Note this is separate from workspaces
+  # No limitations anything your Kubernetes cluster can use as a volume can be used here
+  volumes:
+  - name: example-volume
+    emptyDir: {}
 
   # Workspaces are one of the nice "secret sauce" components of Tekton. 
   # They grant similar functionality to what a volume would, but without the need to declare volumeMounts for each container/step
@@ -65,15 +97,6 @@ spec:
 
     # A boolean to determine if the workspace is mounted as read-only
     readOnly: false
-
-  results:
-
-  # As with a Pod manifest, you specify which volumes (if any) you need for this Task. Note this is separate from workspaces
-  volumes:
-  - name: example-volume
-    emptyDir: {}
-  stepTemplate:
-  sidecars:
 
   # Begins the declaration of steps in a Task. Note each step is its own container in the Pod created by the TaskRun object
   steps:
@@ -138,4 +161,3 @@ spec:
     volumeMounts:
     - name: example-volume
       mountPath: /var/lib/containers
-
