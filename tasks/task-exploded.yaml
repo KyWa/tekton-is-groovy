@@ -20,7 +20,9 @@ description: This is a Task that is
 spec:
   # This is where parameters are defined for the Task
   params:
-    # Sets the name of the paramter that can be  passed to the Task like so: $(params.MYSTRINGPARAM)
+    # Sets the name of the paramter that can be passed to the Task like so: 
+    # string type: $(params.MYSTRINGPARAM)
+    # array type: $(params.MYARRAYPARAM[*])
     # Ideas for params would be an image version/tag or an artifact name
     # Note the names do not have to be capitalized, but is easier to identify when looking at the manifest
   - name: MYSTRINGPARAM
@@ -36,6 +38,43 @@ spec:
     # Provides a description of the parameter and what it is being used for
     description: Used to showcase how a parameter is placed into a Task
       
+  # Resources are being deprecated. These are PipelineResources and not CPU/Mem resources
+  # It was an Alpha feature that is being deprecated, but currently still in v1beta1 API
+  resources:
+    inputs:
+    outputs:
+
+  # Workspaces are one of the nice "secret sauce" components of Tekton. 
+  # They grant similar functionality to what a volume would, but without the need to declare volumeMounts for each container/step
+  # At the Task level, a workspace represents an area the Task can "do something"
+  workspaces:
+    # Specify the name of the workspace relative to the Task
+  - name:
+
+    # Describe what the workspace is to be used for
+    # Optional: true
+    description: A folder to write data to
+
+    # Just like a volume, you specify where the workspace should be mounted to (relative to root)
+    # Optional: true
+    # Defaults to /workspace/<workspace.name> if left empty
+    mountPath: /opt/workspace
+
+    # Declare if the workspace is optional for the TaskRun
+    optional: true
+
+    # A boolean to determine if the workspace is mounted as read-only
+    readOnly: false
+
+  results:
+
+  # As with a Pod manifest, you specify which volumes (if any) you need for this Task. Note this is separate from workspaces
+  volumes:
+  - name: example-volume
+    emptyDir: {}
+  stepTemplate:
+  sidecars:
+
   # Begins the declaration of steps in a Task. Note each step is its own container in the Pod created by the TaskRun object
   steps:
     #############################
@@ -50,9 +89,9 @@ spec:
     #   image: registry.example.com/my-task-image:$(params.IMAGETAG)
     image: registry.example.com/my-task-image
 
-    ### NOTE ###
-    # The following 2 fields (script / command) are unique and there can be only one of them in a step specification
-
+    ### Note ###
+    # If the script field is present, the step cannot also contain a command field.
+    #
     # A script can be passed in to the container to execute upon start. This does not have to be a SHELL script, but could be whatever you would put in a shebang line
     # If no shebang line is presented here the following will be used in its absense:
     # #!/bin/sh
@@ -60,12 +99,6 @@ spec:
     script: |
       #!/usr/bin/env bash
       echo "I did a thing $(params.MYSTRINGVAR)"
-
-    # As with the above, this is where you will pass in a command for the container to execute upon start
-    command: ["echo"]
-
-    # Just as with any container specification, you can pass args to the command (ENTRYPOINT/CMD of the Dockerfile) the container image executes
-    args: ["I", "did", "a", "thing", "$(params.MYSTRINGVAR)"]
 
     # When a step in the Task results in failure, the rest of the steps are skipped and the TaskRun is marked as Failed. The following allows you to specify either of the following to occur if the step would fail
     #
@@ -83,6 +116,12 @@ spec:
     #############################################################
     ### Generic Kubernetes items that are present in the Task ###
     #############################################################
+    # This is where you will pass in a command for the container to execute upon start
+    command: ["echo"]
+
+    # Just as with any container specification, you can pass args to the command (ENTRYPOINT/CMD of the Dockerfile) the container image executes
+    args: ["I", "did", "a", "thing", "$(params.MYSTRINGVAR)"]
+
     # Resources alloted for the container to consume
     resources:
       requests:
@@ -100,17 +139,3 @@ spec:
     - name: example-volume
       mountPath: /var/lib/containers
 
-
-  # Alpha feature that is being deprecated
-  resources:
-    inputs:
-    outputs:
-  workspaces:
-  results:
-
-  # As with a Pod manifest, you specify which volumes (if any) you need for this Task. Note this is separate from workspaces
-  volumes:
-  - name: example-volume
-    emptyDir: {}
-  stepTemplate:
-  sidecars:
