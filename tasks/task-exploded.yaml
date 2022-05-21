@@ -93,6 +93,9 @@ spec:
         cpu: 800m
 
     # Just like in a Pod manifest for a container, you specify where you would like to mount volumes (if any)
+    # NOTE: There are Tekton reserved directories that cannot be used. They are the following:
+    # /workspace - Where resources and workspaces get mounted
+    # /tekton - Tekton specific functionality
     volumeMounts:
     - name: example-volume
       mountPath: /var/lib/containers
