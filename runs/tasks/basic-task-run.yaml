@@ -1,0 +1,12 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: basic-task-run
+spec:
+  params:
+  - name: URL
+    value: https://github.com
+  taskRef:
+    kind: Task
+    name: basic-task

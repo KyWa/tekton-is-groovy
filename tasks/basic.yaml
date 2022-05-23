@@ -10,7 +10,7 @@ spec:
       description: "What URL you wish to curl"
   steps:
   - name: curl-something
-    image: someimage:tag
+    image: registry.access.redhat.com/ubi8/ubi:latest
     command:
     - curl
     - $(params.URL)
