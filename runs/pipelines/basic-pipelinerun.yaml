@@ -1,0 +1,11 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: basic-pipeline-run
+spec:
+  params:
+  - name: URL
+    value: https://github.com
+  pipelineRef:
+    name: basic-pipeline

@@ -10,3 +10,10 @@ To run the `basic-task` Tekton `Task`, you can run the following:
 ```sh
 tkn task start basic-task -p URL=https://github.com
 ```
+
+### Run `basic-pipeline`
+To run the `basic-pipeline` which calls a single `Task`, `basic-task`:
+
+```sh
+tkn pipeline start basic-pipeline -p URL=https://github.com
+```

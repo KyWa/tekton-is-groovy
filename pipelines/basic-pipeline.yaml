@@ -1,0 +1,17 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: basic-pipeline
+spec:
+  params:
+    - name: URL
+      type: string
+      description: Which URL to curl
+  tasks:
+    - name: get-url
+      taskRef:
+        name: basic-task
+      params:
+        - name: URL
+          value: $(params.URL)
