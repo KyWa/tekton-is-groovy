@@ -1,0 +1,47 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-pipeline
+spec:
+  params:
+    - name: image
+      type: string
+      description: "Image repository and name: repo/image"
+    - name: tag
+      type: string
+    - name: dockerfile
+      type: string
+      description: "Path to the Dockerfile"
+  workspaces:
+    - name: build
+    - name: ssh-creds
+  tasks:
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: ssh-directory
+          workspace: ssh-creds
+        - name: output
+          workspace: build
+      params:
+        - name: url
+          value: git@github.com:KyWa/dockerbuilds.git
+        - name: deleteExisting
+          value: "true"
+    - name: build
+      taskRef:
+        name: buildah
+      runAfter:
+        - fetch-repository
+      params:
+        - name: IMAGE
+          value: $(params.image)
+        - name: IMAGE_TAG
+          value: $(params.tag)
+        - name: DOCKERFILE_PATH
+          value: $(params.dockerfile)
+      workspaces:
+        - name: builder
+          workspace: build
