@@ -2,6 +2,15 @@
 
 This is the supporting code repository for the blog post located at https://blog.kywa.io/tekton-is-groovy
 
+## Using the `buildah` Task
+
+The `buildah` Task has 2 `Secret` requirements:
+
+* The `git` repository (SSH)
+* The Container registry auth
+
+With each of these in the namespace, the `PipelineRun` can be applied
+
 ## `tkn` CLI commands
 
 ### Run `basic-task`
