@@ -8,14 +8,13 @@ spec:
     - name: REGISTRY
       description: Which Container registry to utilize
       default: quay.io
+    - name: REPOSITORY
+      description: Which Container image repository to utilize
     - name: IMAGE
       description: "Reference of the image buildah will produce. Should include repository in its name: repository/image"
     - name: IMAGE_TAG
       description: Tag for the newly built image
       default: latest
-    - name: STORAGE_DRIVER
-      description: Set buildah storage driver
-      default: overlay
     - name: DOCKERFILE_PATH 
       description: "Path to the Dockerfile to build. Give full path to the Dockerfile in repository: path/to/Dockerfile"
       default: Dockerfile
@@ -28,7 +27,7 @@ spec:
       securityContext:
         privileged: true
       script: |
-        buildah --storage-driver=$(params.STORAGE_DRIVER) build --no-cache -f $(params.DOCKERFILE_PATH) -t $(params.REGISTRY)/$(params.IMAGE):$(params.IMAGE_TAG) .
+        buildah --storage-driver=overlay build --no-cache -f $(params.DOCKERFILE_PATH) -t $(params.REGISTRY)/$(params.REPOSITORY)/$(params.IMAGE):$(params.IMAGE_TAG) .
       volumeMounts:
         - name: varlibcontainers
           mountPath: /var/lib/containers
@@ -38,7 +37,7 @@ spec:
       securityContext:
         privileged: true
       script: |
-        buildah --storage-driver=$(params.STORAGE_DRIVER) push --authfile /tmp/authfile/auth $(params.REGISTRY)/$(params.image):$(params.IMAGE_TAG)
+        buildah --storage-driver=overlay push --authfile /tmp/authfile/auth $(params.REGISTRY)/$(params.REPOSITORY)/$(params.IMAGE):$(params.IMAGE_TAG) 
       volumeMounts:
         - name: varlibcontainers
           mountPath: /var/lib/containers
