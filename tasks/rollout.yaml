@@ -1,0 +1,21 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: rollout
+spec:
+  params:
+    - name: IMAGE
+      type: string
+      description: Image for the Deployment to be updated with
+    - name: APPLICATION
+      type: string
+      description: Name of the Deployment to update (assumes container name the same)
+  steps:
+  - name: update-deployment
+    image: docker.io/bitnami/kubectl
+    args:
+    - set
+    - image
+    - deployment/$(params.APPLICATION)
+    - "$(params.APPLICATION)=$(params.IMAGE)"

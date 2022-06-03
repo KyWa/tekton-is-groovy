@@ -15,40 +15,39 @@ spec:
     - name: IMAGE_TAG
       description: Tag for the newly built image
       default: latest
-    - name: DOCKERFILE_PATH 
+    - name: DOCKERFILE
       description: "Path to the Dockerfile to build. Give full path to the Dockerfile in repository: path/to/Dockerfile"
       default: Dockerfile
-  workspaces:
-    - name: builder
+  results:
+    - name: image-digest
+      description: Image digest of newly built image
   steps:
     - name: build
-      image: quay.io/containers/buildah@sha256:514320ef97825ee226a0d7ad9ebc348ca508234e0a8a7b393b48451b77ec17ba
+      image: quay.io/containers/buildah@sha256:4bf42285d469a2b254df082fb118a0ad8dee20a8168365589165c93e6f0e3c85
       workingDir: $(workspaces.builder.path)
       securityContext:
         privileged: true
       script: |
-        buildah --storage-driver=overlay build --no-cache -f $(params.DOCKERFILE_PATH) -t $(params.REGISTRY)/$(params.REPOSITORY)/$(params.IMAGE):$(params.IMAGE_TAG) .
+        buildah --storage-driver=overlay build --no-cache -f $(params.DOCKERFILE) -t $(params.REGISTRY)/$(params.REPOSITORY)/$(params.IMAGE):$(params.IMAGE_TAG)
       volumeMounts:
         - name: varlibcontainers
           mountPath: /var/lib/containers
     - name: push
-      image: quay.io/containers/buildah@sha256:514320ef97825ee226a0d7ad9ebc348ca508234e0a8a7b393b48451b77ec17ba
+      image: quay.io/containers/buildah@sha256:4bf42285d469a2b254df082fb118a0ad8dee20a8168365589165c93e6f0e3c85
       workingDir: $(workspaces.builder.path)
       securityContext:
         privileged: true
       script: |
-        buildah --storage-driver=overlay push --authfile /tmp/authfile/auth $(params.REGISTRY)/$(params.REPOSITORY)/$(params.IMAGE):$(params.IMAGE_TAG) 
+        buildah --storage-driver=overlay push --authfile $(workspaces.registry-secret.path)/auth --digestfile=$(workspaces.builder.path)/image-digest $(params.REGISTRY)/$(params.REPOSITORY)/$(params.IMAGE):$(params.IMAGE_TAG) 
       volumeMounts:
         - name: varlibcontainers
           mountPath: /var/lib/containers
-        - name: image-secret
-          mountPath: /tmp/authfile
+    - name: digest-to-results
+      image: quay.io/containers/buildah@sha256:4bf42285d469a2b254df082fb118a0ad8dee20a8168365589165c93e6f0e3c85
+      script: cat $(workspaces.builder.path)/image-digest | tee /tekton/results/image-digest
   volumes:
     - name: varlibcontainers
       emptyDir: {}
-    - name: image-secret
-      secret:
-        secretName: image-pull-secret
-        items:
-          - key: .dockerconfigjson
-            path: auth
+  workspaces:
+    - name: builder
+    - name: registry-secret

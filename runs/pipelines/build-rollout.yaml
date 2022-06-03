@@ -2,28 +2,26 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  generateName: build-pipeline-run-
+  generateName: build-and-rollout-
 spec:
+  serviceAccountName: tekton
   params:
     - name: SOURCE_URL
-      value: git@github.com:KyWa/dockerbuilds.git
+      value: ''
     - name: IMAGE
-      value: "secret-kubectl"
+      value: ''
     - name: IMAGE_REGISTRY
-      value: docker.io
+      value: ''
     - name: IMAGE_REPOSITORY
-      value: mineops
+      value: ''
     - name: DOCKERFILE
-      value: "go-env/Dockerfile"
+      value: ''
   pipelineRef:
-    name: build
+    name: build-and-rollout
   workspaces:
     - name: ssh-creds
       secret:
         secretName: ssh-auth
-        items:
-          - key: ssh-privatekey
-            path: id_rsa
     - name: build
       volumeClaimTemplate:
         spec:

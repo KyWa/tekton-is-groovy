@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: build
+  name: build-and-rollout
 spec:
   params:
     - name: SOURCE_URL
@@ -25,6 +25,10 @@ spec:
       type: string
       description: "Path to the Dockerfile: Dockerfile or subdir/Dockerfile"
       default: Dockerfile
+  results:
+    - name: image-digest
+      description: Image digest of the built image
+      value: $(tasks.build.results.image-digest)
   workspaces:
     - name: ssh-creds
     - name: build
@@ -64,3 +68,11 @@ spec:
           workspace: build
         - name: registry-secret
           workspace: registry-credentials
+    - name: update-deployment
+      taskRef:
+        name: rollout
+      params:
+        - name: IMAGE
+          value: $(params.IMAGE_REGISTRY)/$(params.IMAGE_REPOSITORY)/$(params.IMAGE)@$(tasks.build.results.image-digest)
+        - name: APPLICATION
+          value: $(params.IMAGE)
