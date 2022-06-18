@@ -7,21 +7,26 @@ spec:
   serviceAccountName: tekton
   params:
     - name: SOURCE_URL
-      value: ''
+      value: 'git@github.com:KyWa/kywa-website.git'
     - name: IMAGE
-      value: ''
+      value: 'tekton-is-groovy'
+    - name: DEPLOYMENT
+      value: 'tekton-is-groovy'
     - name: IMAGE_REGISTRY
-      value: ''
+      value: 'docker.io'
     - name: IMAGE_REPOSITORY
-      value: ''
+      value: 'mineops'
     - name: DOCKERFILE
-      value: ''
+      value: 'Dockerfile'
   pipelineRef:
     name: build-and-rollout
   workspaces:
     - name: ssh-creds
       secret:
         secretName: ssh-auth
+        items:
+          - key: ssh-privatekey
+            path: id_rsa
     - name: build
       volumeClaimTemplate:
         spec:

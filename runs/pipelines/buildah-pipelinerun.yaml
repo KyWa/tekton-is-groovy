@@ -6,15 +6,15 @@ metadata:
 spec:
   params:
     - name: SOURCE_URL
-      value: git@github.com:KyWa/dockerbuilds.git
+      value: git@github.com:KyWa/kywa-website.git
     - name: IMAGE
-      value: "secret-kubectl"
+      value: "kywa-website"
     - name: IMAGE_REGISTRY
       value: docker.io
     - name: IMAGE_REPOSITORY
       value: mineops
     - name: DOCKERFILE
-      value: "go-env/Dockerfile"
+      value: "Dockerfile"
   pipelineRef:
     name: build
   workspaces:

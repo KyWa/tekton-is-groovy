@@ -17,6 +17,9 @@ spec:
     - name: IMAGE
       type: string
       description: "Image name"
+    - name: DEPLOYMENT
+      type: string
+      description: "Name of the Deployment to update"
     - name: IMAGE_TAG
       type: string
       default: latest
@@ -75,4 +78,4 @@ spec:
         - name: IMAGE
           value: $(params.IMAGE_REGISTRY)/$(params.IMAGE_REPOSITORY)/$(params.IMAGE)@$(tasks.build.results.image-digest)
         - name: APPLICATION
-          value: $(params.IMAGE)
+          value: $(params.DEPLOYMENT)
