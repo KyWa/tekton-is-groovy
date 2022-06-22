@@ -81,7 +81,7 @@ spec:
   # At the Task level, a workspace represents an area the Task can "do something"
   workspaces:
     # Specify the name of the workspace relative to the Task
-  - name:
+  - name: some-workspace
 
     # Describe what the workspace is to be used for
     # Optional: true
@@ -111,6 +111,11 @@ spec:
     #   image: $(params.STEPIMAGE)
     #   image: registry.example.com/my-task-image:$(params.IMAGETAG)
     image: registry.example.com/my-task-image
+
+    # WorkingDir sets "where" the container works out of, aka its "starting point"
+    # This behaves exactly the same as the WORKDIR instruction in a Dockerfile
+    # You do not need to set this, but can be helpful if you have a complex script/command step
+    workingDir: $(workspaces.some-workspace.path)
 
     ### Note ###
     # If the script field is present, the step cannot also contain a command field.
