@@ -1,0 +1,24 @@
+workspaces:
+- name: pvc-workspace
+  persistentVolumeClaim:
+    claimName: my-pvc
+
+- name: volumeclaim-workspace
+  volumeClaimTemplate:
+    spec:
+      accessModes:
+        - ReadWriteMany
+      resources:
+        requests:
+          storage: 1Gi
+
+- name: emptydir-workspace
+  emptyDir: {}
+
+- name: secret-workspace
+  secret:
+    secretName: my-secret
+
+- name: configmap-workspace
+  configMap:
+    name: some-configmap
